@@ -14234,6 +14234,36 @@ BOOST_AUTO_TEST_CASE(base_access_to_function_type_variables)
 	ABI_CHECK(callContractFunction("h()"), encodeArgs(2));
 }
 
+BOOST_AUTO_TEST_CASE(code_access)
+{
+	char const* sourceCode = R"(
+		contract C {
+			function creation() public pure returns (bytes) {
+				return type(C).creationCode;
+			}
+			function runtime() public pure returns (bytes) {
+				return type(C).runtimeCode;
+			}
+			function runtimeAllocCheck() public pure returns (bytes) {
+				uint[] memory a = new uint[](2);
+				bytes memory c = type(C).runtimeCode;
+				uint[] memory b = new uint[](2);
+				a[0] = 1;
+				a[1] = 2;
+				b[0] = 3;
+				b[1] = 4;
+				return c;
+			}
+		}
+	)";
+	compileAndRun(sourceCode);
+	ABI_CHECK(callContractFunction("creation()"), encodeArgs(2));
+	ABI_CHECK(callContractFunction("runtime()"), encodeArgs());
+	bytes code1 = callContractFunction("runtime()");
+	bytes code2 = callContractFunction("runtimeAllocCheck()");
+	BOOST_CHECK(code1 == code2);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }
