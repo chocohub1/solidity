@@ -14238,15 +14238,23 @@ BOOST_AUTO_TEST_CASE(code_access)
 {
 	char const* sourceCode = R"(
 		contract C {
+			function lengths() public pure returns (bool) {
+				uint crLen = type(D).creationCode.length;
+				uint runLen = type(D).runtimeCode.length;
+				require(runLen < crLen);
+				require(crLen >= 0xc0 && crLen < 0xf0);
+				require(runLen >= 0xa0 && runLen < 0xd0);
+				return true;
+			}
 			function creation() public pure returns (bytes memory) {
-				return type(C).creationCode;
+				return type(D).creationCode;
 			}
 			function runtime() public pure returns (bytes memory) {
-				return type(C).runtimeCode;
+				return type(D).runtimeCode;
 			}
 			function runtimeAllocCheck() public pure returns (bytes memory) {
 				uint[] memory a = new uint[](2);
-				bytes memory c = type(C).runtimeCode;
+				bytes memory c = type(D).runtimeCode;
 				uint[] memory b = new uint[](2);
 				a[0] = 1;
 				a[1] = 2;
@@ -14255,9 +14263,13 @@ BOOST_AUTO_TEST_CASE(code_access)
 				return c;
 			}
 		}
+		contract D {
+			function f() public pure returns (uint) { return 7; }
+		}
 	)";
-	compileAndRun(sourceCode);
-	ABI_CHECK(callContractFunction("creation()"), encodeArgs(2));
+	compileAndRun(sourceCode, 0, "C");
+	ABI_CHECK(callContractFunction("lengths()"), encodeArgs(true));
+	ABI_CHECK(callContractFunction("creation()"), encodeArgs(0x20, 78));
 	ABI_CHECK(callContractFunction("runtime()"), encodeArgs());
 	bytes code1 = callContractFunction("runtime()");
 	bytes code2 = callContractFunction("runtimeAllocCheck()");
