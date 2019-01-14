@@ -1352,6 +1352,7 @@ bool ExpressionCompiler::visit(MemberAccess const& _memberAccess)
 				})")("free", to_string(CompilerUtils::freeMemoryPointer)).render(),
 				{"start", "end"}
 			);
+			m_context << Instruction::POP;
 		}
 		else
 			solAssert(false, "Unknown magic member.");
