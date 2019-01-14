@@ -14238,13 +14238,13 @@ BOOST_AUTO_TEST_CASE(code_access)
 {
 	char const* sourceCode = R"(
 		contract C {
-			function creation() public pure returns (bytes) {
+			function creation() public pure returns (bytes memory) {
 				return type(C).creationCode;
 			}
-			function runtime() public pure returns (bytes) {
+			function runtime() public pure returns (bytes memory) {
 				return type(C).runtimeCode;
 			}
-			function runtimeAllocCheck() public pure returns (bytes) {
+			function runtimeAllocCheck() public pure returns (bytes memory) {
 				uint[] memory a = new uint[](2);
 				bytes memory c = type(C).runtimeCode;
 				uint[] memory b = new uint[](2);
